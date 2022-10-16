@@ -20,6 +20,18 @@ def print_dict(dict):
     except:
       print('{0: <10}|'.format(key), value)
 
-print(get_file_lines('tcp_addrs_0.txt'))
-tcp_info = get_tcp_info('tcp_data_0.dat')
-print_dict(tcp_info)
+def get_source_and_dest(path):
+  text = get_file_lines(path)[0]
+  return text.strip().split(" ")
+
+def get_bytes_IP_from_dots_and_numbers(dots_and_numbers):
+  numbers = dots_and_numbers.split(".")
+  return b''.join([int(num).to_bytes(1, 'big') for num in numbers])
+
+def get_source_and_dest_bytes(path):
+  sd = get_source_and_dest(path)
+  return [get_bytes_IP_from_dots_and_numbers(path) for path in sd]
+
+print_dict(get_tcp_info('tcp_data_0.dat'))
+print(get_source_and_dest('tcp_addrs_0.txt'))
+print(get_source_and_dest_bytes('tcp_addrs_0.txt'))
