@@ -1,3 +1,4 @@
+### getting data from file 
 def get_file_lines(path):
   """ get UTF-8 string from file path """
   return open(path).readlines()
@@ -20,6 +21,8 @@ def print_dict(dict):
     except:
       print('{0: <10}|'.format(key), value)
 
+
+### getting file paths 
 def get_source_and_dest(path):
   """ gets source and destination path names as strings """
   text = get_file_lines(path)[0]
@@ -41,6 +44,8 @@ def get_txt_and_dat_files_from_number(number):
   addrs = "tcp_data_{}.dat".format(number)
   return txt, addrs
 
+
+### checksum calculation and verification 
 def get_pseudo_header_and_old_checksum(number=0, verbose=False):
   """ 
   gets pseudo header + TCP packet and gets old checksum. 
@@ -93,6 +98,8 @@ def is_valid_checksum(number=0, verbose=False):
   actual_checksum = calculate_checksum(pseudo_header)
   return (expected_checksum == actual_checksum)
 
+
+### checking checksums for all files and getting outputs 
 def check_all_checksums(verbose=True):
   """ checks if expected checksum matches actual checksum for each file """
   valids = [is_valid_checksum(number) for number in range(10)]
