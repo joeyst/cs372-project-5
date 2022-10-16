@@ -74,18 +74,19 @@ def calculate_checksum(data):
 def is_valid_checksum(number=0, verbose=False):
   pseudo_header, expected_checksum = get_pseudo_header_and_old_checksum(number, verbose)
   # pad data if odd length 
-  if len(pseudo_header) % 2 == 1:
+  if len(pseudo_header) % 2 == 0:
     pseudo_header += b'\x00'
   actual_checksum = calculate_checksum(pseudo_header)
   return (expected_checksum == actual_checksum)
 
 def check_all_checksums(verbose=True):
   valids = [is_valid_checksum(number) for number in range(10)]
+  expecteds = [True, True, True, True, True, False, False, False, False, False]
 
   if verbose:
-    for index, valid in enumerate(valids):
-      print("Index {0: <1}| {1: <5}".format(index, valid))
-    expecteds = [True, True, True, True, True, False, False, False, False, False]
+    print("          act. | exp.")
+    for (index, valid), expected in zip(enumerate(valids), expecteds):
+      print("Index {0: <1} |  {1: <2}  |  {2: <5}".format(index, valid, expected))
   
   all_correct = True
   for valid, expected, in zip(valids, expecteds):
