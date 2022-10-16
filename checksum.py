@@ -21,23 +21,33 @@ def print_dict(dict):
       print('{0: <10}|'.format(key), value)
 
 def get_source_and_dest(path):
+  """ gets source and destination path names as strings """
   text = get_file_lines(path)[0]
   return text.strip().split(" ")
 
 def get_bytes_IP_from_dots_and_numbers(dots_and_numbers):
+  """ converts given dots and numbers data to bytestring """
   numbers = dots_and_numbers.split(".")
   return b''.join([int(num).to_bytes(1, 'big') for num in numbers])
 
 def get_source_and_dest_bytes(path):
+  """ get souce and destination paths as bytestrings """
   sd = get_source_and_dest(path)
   return [get_bytes_IP_from_dots_and_numbers(path) for path in sd]
 
 def get_txt_and_dat_files_from_number(number):
+  """ gets file names associated with a certain number """
   txt = "tcp_addrs_{}.txt".format(number)
   addrs = "tcp_data_{}.dat".format(number)
   return txt, addrs
 
 def get_pseudo_header_and_old_checksum(number=0, verbose=False):
+  """ 
+  gets pseudo header + TCP packet and gets old checksum. 
+
+  The `pseudo_header` variable here is equivalent to the
+  `pseudo_header + tcp_data` in the assignment instructions. 
+  """
   txt, dat = get_txt_and_dat_files_from_number(number)
 
   # get info from text file 
@@ -59,9 +69,12 @@ def get_pseudo_header_and_old_checksum(number=0, verbose=False):
   # creating the pseudo header
   ip_header = source + dest + zero + ptcl + int.to_bytes(tcp_length, 2, 'big')
   pseudo_header = ip_header + tcp_data
+
+  # return the whole packet (pseudo header + TCP data) and the checksum given 
   return pseudo_header, old_checksum 
 
 def calculate_checksum(data):
+  """ calculates checksum of packet """
   offset = 0 
   total = 0 
   while offset < len(data): 
@@ -72,6 +85,7 @@ def calculate_checksum(data):
   return (~total) & 0xffff
 
 def is_valid_checksum(number=0, verbose=False):
+  """ checks if expected checksum matches actual checksum for a file from given number """
   pseudo_header, expected_checksum = get_pseudo_header_and_old_checksum(number, verbose)
   # pad data if odd length 
   if len(pseudo_header) % 2 == 0:
@@ -80,6 +94,7 @@ def is_valid_checksum(number=0, verbose=False):
   return (expected_checksum == actual_checksum)
 
 def check_all_checksums(verbose=True):
+  """ checks if expected checksum matches actual checksum for each file """
   valids = [is_valid_checksum(number) for number in range(10)]
   expecteds = [True, True, True, True, True, False, False, False, False, False]
 
@@ -100,4 +115,18 @@ def check_all_checksums(verbose=True):
 
   return valids
 
-check_all_checksums()
+def print_outputs():
+  """ 
+  takes outputs from `check_all_checksums` function and prints 
+  `PASS` or `FAIL` for each output. 
+  """
+  valids = check_all_checksums(False)
+  for valid in valids:
+    if valid == True:
+      print("PASS")
+    elif valid == False:
+      print("FAIL")
+    else:
+      print("Uhh.")
+
+print_outputs()
