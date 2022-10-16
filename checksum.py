@@ -61,8 +61,42 @@ def get_pseudo_header_and_old_checksum(number=0, verbose=False):
   pseudo_header = ip_header + tcp_data
   return pseudo_header, old_checksum 
 
-print_dict(get_tcp_info('tcp_data_0.dat'))
-print(get_source_and_dest('tcp_addrs_0.txt'))
-print(get_source_and_dest_bytes('tcp_addrs_0.txt'))
-print(get_txt_and_dat_files_from_number(0))
-print(get_pseudo_header_and_old_checksum())
+def calculate_checksum(data):
+  offset = 0 
+  total = 0 
+  while offset < len(data): 
+    word = int.from_bytes(data[offset:offset+2], 'big') 
+    total += word
+    total = (total & 0xffff) + (total >> 16)
+    offset += 2 
+  return (~total) & 0xffff
+
+def is_valid_checksum(number=0, verbose=False):
+  pseudo_header, expected_checksum = get_pseudo_header_and_old_checksum(number, verbose)
+  # pad data if odd length 
+  if len(pseudo_header) % 2 == 1:
+    pseudo_header += b'\x00'
+  actual_checksum = calculate_checksum(pseudo_header)
+  return (expected_checksum == actual_checksum)
+
+def check_all_checksums(verbose=True):
+  valids = [is_valid_checksum(number) for number in range(10)]
+
+  if verbose:
+    for index, valid in enumerate(valids):
+      print("Index {0: <1}| {1: <5}".format(index, valid))
+    expecteds = [True, True, True, True, True, False, False, False, False, False]
+  
+  all_correct = True
+  for valid, expected, in zip(valids, expecteds):
+    all_correct &= (valid == expected)
+  
+  if verbose:
+    if all_correct:
+      print("All outputs match.")
+    else:
+      print("An output was wrong.")
+
+  return valids
+
+check_all_checksums()
